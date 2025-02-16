@@ -30,6 +30,22 @@ func getCpuPct() float64 {
 	return cpu[0]
 }
 
+func getDiskNames() []string {
+	disks, err := disk.Partitions(false)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var diskNames []string
+
+	for _, partition := range disks {
+		diskNames = append(diskNames, partition.Mountpoint)
+	}
+
+	return diskNames
+}
+
 func getDiskUsage(drivePath string) float64 {
 	diskUsage, err := disk.Usage(drivePath)
 
