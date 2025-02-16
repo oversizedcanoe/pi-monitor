@@ -11,9 +11,14 @@ func main() {
 	for {
 		isWindows := runtime.GOOS == "windows"
 		tempC := getTempC(isWindows)
-		fmt.Println("Temp C: " + strconv.FormatFloat(tempC, 'f', 2, 32))
+		fmt.Println("Temp: " + strconv.FormatFloat(tempC, 'f', 2, 64) + "C")
 		cpuPct := getCpuPct(isWindows)
-		fmt.Println("CPU %:" + strconv.Itoa(cpuPct))
+		fmt.Println("CPU: " + strconv.Itoa(cpuPct) + "%")
+
+		percentUsedInC := getFullStoragePctInDrive(isWindows, "c")
+		fmt.Println("C:/ full: " + strconv.FormatFloat(percentUsedInC, 'f', 2, 64) + "%")
+		percentUsedInD := getFullStoragePctInDrive(isWindows, "d")
+		fmt.Println("D:/ full: " + strconv.FormatFloat(percentUsedInD, 'f', 2, 64) + "%")
 
 		currentTime := time.Now()
 		fmt.Println("Running at " + currentTime.String())
