@@ -5,44 +5,61 @@ import (
 	"strings"
 )
 
-func getTempC() float32 {
-	processResult := runProcess("cmd", "/C", "wmic", "/namespace:\\\\root\\wmi", "PATH", "MSAcpi_ThermalZoneTemperature", "get", "CurrentTemperature")
+func getTempC(isWindows bool) float64 {
+	var tempC float64
 
-	tempText := strings.Split(processResult, "\n")[1]
-	tempText = strings.TrimSpace(tempText)
+	if isWindows {
+		// Must be run as admin?
+		processResult := runProcess("cmd", "/C", "wmic", "/namespace:\\\\root\\wmi", "PATH", "MSAcpi_ThermalZoneTemperature", "get", "CurrentTemperature")
 
-	var tempTenthKelvin int
-	var err error
+		// Output is four lines, 2nd line has temp
+		tempText := strings.Split(processResult, "\n")[1]
+		tempText = strings.TrimSpace(tempText)
 
-	tempTenthKelvin, err = strconv.Atoi(tempText)
+		// Result is in tenth degrees Kelvin
+		var tempTenthKelvin int
+		var err error
 
-	if err != nil {
-		panic(err)
+		tempTenthKelvin, err = strconv.Atoi(tempText)
+
+		if err != nil {
+			panic(err)
+		}
+
+		tempC = (float64(tempTenthKelvin) / 10) - 273
+	} else {
+		// Linux
+		// vcgencmd measure_temp
+		// Output:
+		// temp=40.4'C
+
 	}
-
-	tempC := (float32(tempTenthKelvin) / 10) - 273
-
-	// Windows -- Must be run as admin :(
-	// wmic /namespace:\\root\wmi PATH MSAcpi_ThermalZoneTemperature get CurrentTemperature
-	// Output:
-	// CurrentTemperature
-	// 3072
-	//
-	//
-
-	// Two lines (maybe four), in tenth degrees Kelvin
-	// C = (value / 10) - 273
-
-	// Linux
-	// vcgencmd measure_temp
-	// Output:
-	// temp=40.4'C
 
 	return tempC
 }
 
-func getCpuPct() int {
-	return 1
+func getCpuPct(isWindows bool) int {
+	var cpuPct int
+
+	if isWindows {
+		processResult := runProcess("cmd", "/C", "wmic", "cpu", "get", "loadpercentage")
+
+		// Output is three lines, 2nd line has percent
+		tempText := strings.Split(processResult, "\n")[1]
+		tempText = strings.TrimSpace(tempText)
+
+		var err error
+
+		cpuPct, err = strconv.Atoi(tempText)
+
+		if err != nil {
+			panic(err)
+		}
+	} else {
+
+	}
+
+	return cpuPct
 }
 
 func getGpuPct() int {
