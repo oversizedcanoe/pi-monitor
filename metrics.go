@@ -1,97 +1,61 @@
 package main
 
 import (
-	"strconv"
-	"strings"
+	"time"
+
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/disk"
+	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/sensors"
 )
 
-func getTempC(isWindows bool) float64 {
-	var tempC float64
+func getTempC() float64 {
+	sensorsTemperatures, err := sensors.SensorsTemperatures()
 
-	if isWindows {
-		// Must be run as admin?
-		processResult := runProcess("cmd", "/C", "wmic", "/namespace:\\\\root\\wmi", "PATH", "MSAcpi_ThermalZoneTemperature", "get", "CurrentTemperature")
-
-		// Output is four lines, 2nd line has temp
-		tempText := strings.Split(processResult, "\n")[1]
-		tempText = strings.TrimSpace(tempText)
-
-		// Result is in tenth degrees Kelvin
-		var tempTenthKelvin int
-		var err error
-
-		tempTenthKelvin, err = strconv.Atoi(tempText)
-
-		if err != nil {
-			panic(err)
-		}
-
-		tempC = (float64(tempTenthKelvin) / 10) - 273
-	} else {
-		// Linux
-		// vcgencmd measure_temp
-		// Output:
-		// temp=40.4'C
-
+	if err != nil {
+		panic(err)
 	}
 
-	return tempC
+	return sensorsTemperatures[0].Temperature
 }
 
-func getCpuPct(isWindows bool) int {
-	var cpuPct int
+func getCpuPct() float64 {
+	cpu, err := cpu.Percent(time.Duration(0), false)
 
-	if isWindows {
-		processResult := runProcess("cmd", "/C", "wmic", "cpu", "get", "loadpercentage")
-
-		// Output is three lines, 2nd line has percent
-		tempText := strings.Split(processResult, "\n")[1]
-		tempText = strings.TrimSpace(tempText)
-
-		var err error
-
-		cpuPct, err = strconv.Atoi(tempText)
-
-		if err != nil {
-			panic(err)
-		}
-	} else {
-
+	if err != nil {
+		panic(err)
 	}
 
-	return cpuPct
+	return cpu[0]
 }
 
-func getFullStoragePctInDrive(isWindows bool, driveName string) float64 {
-	var freeStoragePct float64
+func getDiskUsage(drivePath string) float64 {
+	diskUsage, err := disk.Usage(drivePath)
 
-	if isWindows {
-		processResult := runProcess("cmd", "/C", "fsutil", "volume", "diskfree", driveName+":")
-
-		processLines := strings.Split(processResult, "\n")
-
-		firstLineGb := strings.Split(strings.Split(processLines[0], "(")[1], " ")[0]
-		secondLineGb := strings.Split(strings.Split(processLines[1], "(")[1], " ")[0]
-
-		usedStorage, err := strconv.ParseFloat(firstLineGb, 64)
-
-		if err != nil {
-			panic(err)
-		}
-
-		totalStorage, err := strconv.ParseFloat(secondLineGb, 64)
-
-		if err != nil {
-			panic(err)
-		}
-
-		freeStoragePct = (1 - (usedStorage / totalStorage)) * 100
-
-		// Output is three lines. We want the ending of the first and second lines
-		// Total free bytes        : 810,748,350,464 (755.1 GB)
-		// Total bytes             : 999,507,046,400 (930.9 GB)
-		// Total quota free bytes  : 810,748,350,464 (755.1 GB)
+	if err != nil {
+		panic(err)
 	}
 
-	return freeStoragePct
+	return diskUsage.UsedPercent
+}
+
+func getRamPct() float64 {
+	virtualMemory, err := mem.VirtualMemory()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return virtualMemory.UsedPercent
+}
+
+func getUptimeSec() uint64 {
+	uptimeSec, err := host.Uptime()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return uptimeSec
 }
