@@ -8,8 +8,11 @@ import (
 )
 
 type EnvConfig struct {
+	deviceName      string
 	email           string
 	pass            string
+	emailPort       int
+	emailHost       string
 	sleepTime       int
 	threshholdTemp  int
 	threshholdDisk1 int
@@ -31,8 +34,11 @@ func loadConfig() {
 	Logger.Println("Config file read")
 
 	config = EnvConfig{
-		email:           os.Getenv("EMAIL"),
-		pass:            os.Getenv("PASS"),
+		deviceName:      os.Getenv("DEVICE"),
+		email:           os.Getenv("EMAIL_ADDRESS"),
+		pass:            os.Getenv("EMAIL_PASSWORD"),
+		emailPort:       parseConfigToInt("EMAIL_PORT"),
+		emailHost:       os.Getenv("EMAIL_HOST"),
 		sleepTime:       parseConfigToInt("SLEEP_TIME_SEC"),
 		threshholdTemp:  parseConfigToInt("THRESHHOLD_TEMP"),
 		threshholdDisk1: parseConfigToInt("THRESHHOLD_DISK1_USAGE"),
