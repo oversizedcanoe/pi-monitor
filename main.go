@@ -12,7 +12,8 @@ var Logger *log.Logger = log.New(os.Stdout, "", logFlags)
 
 func main() {
 	Logger.Println("Script started")
-	createDatabaseIdempotent()
+
+	initialize()
 
 	for {
 		tempC := getTempC()
@@ -49,6 +50,12 @@ func main() {
 		insertMetrics(currentTime, tempC, cpuPct, disk1Usage, disk2Usage, memoryUsage, uptimeSec)
 
 		Logger.Println("Running at " + currentTime.String())
-		time.Sleep(60 * time.Second)
+
+		time.Sleep(time.Duration(getConfig().sleepTime) * time.Second)
 	}
+}
+
+func initialize() {
+	loadConfig()
+	createDatabaseIdempotent()
 }
