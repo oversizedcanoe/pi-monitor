@@ -8,12 +8,19 @@ import (
 )
 
 type EnvConfig struct {
-	email     string
-	pass      string
-	sleepTime int
+	email           string
+	pass            string
+	sleepTime       int
+	threshholdTemp  int
+	threshholdDisk1 int
+	threshholdDisk2 int
 }
 
 var config EnvConfig
+
+func getConfig() EnvConfig {
+	return config
+}
 
 func loadConfig() {
 	if err := godotenv.Load("config.env"); err != nil {
@@ -23,21 +30,24 @@ func loadConfig() {
 
 	Logger.Println("Config file read")
 
-	sleepTimeStr := os.Getenv("SLEEP_TIME_SEC")
-	sleepTimeSec, err := strconv.Atoi(sleepTimeStr)
-
-	if err != nil {
-		Logger.Println("Failed to parse SLEEP_TIME_SEC")
-		panic(err)
-	}
-
 	config = EnvConfig{
-		email:     os.Getenv("EMAIL"),
-		pass:      os.Getenv("PASS"),
-		sleepTime: sleepTimeSec,
+		email:           os.Getenv("EMAIL"),
+		pass:            os.Getenv("PASS"),
+		sleepTime:       parseConfigToInt("SLEEP_TIME_SEC"),
+		threshholdTemp:  parseConfigToInt("THRESHHOLD_TEMP"),
+		threshholdDisk1: parseConfigToInt("THRESHHOLD_DISK1_USAGE"),
+		threshholdDisk2: parseConfigToInt("THRESHHOLD_DISK2_USAGE"),
 	}
 }
 
-func getConfig() EnvConfig {
-	return config
+func parseConfigToInt(key string) int {
+	envValueStr := os.Getenv(key)
+	envValue, err := strconv.Atoi(envValueStr)
+
+	if err != nil {
+		Logger.Println("Failed to parse " + key)
+		panic(err)
+	}
+
+	return envValue
 }
