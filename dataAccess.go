@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -11,10 +10,12 @@ import (
 func createDatabaseIdempotent() {
 	// Ensure file exists
 	if _, err := os.Stat("./database.db"); errors.Is(err, os.ErrNotExist) {
-		fmt.Println("Creating database file")
+		Logger.Println("Creating database file")
 		if _, err := os.Create("./database.db"); err != nil {
 			panic(err)
 		}
+	} else {
+		Logger.Println("Database file exists")
 	}
 
 	query := "SELECT name FROM sqlite_master WHERE type='table' AND name='Metrics';"
@@ -24,7 +25,7 @@ func createDatabaseIdempotent() {
 	result.Scan(&name)
 
 	if name == "" {
-		fmt.Println("Creating table")
+		Logger.Println("Creating table")
 
 		command := `CREATE TABLE "Metrics" (
 		"QueryTime"	INTEGER UNIQUE,
@@ -37,6 +38,8 @@ func createDatabaseIdempotent() {
 		);`
 
 		executeCommand(command)
+	} else {
+		Logger.Println("'Metrics' table exists")
 	}
 }
 
@@ -48,5 +51,5 @@ func insertMetrics(time time.Time, tempC float64, cpuPct float64,
 	// To convert back to time.Time, do time.Unix(value, 0)
 	affectedRows := executeCommand(command, time.Unix(), tempC, cpuPct, disk1Usage, disk2Usage, memoryUsage, uptimeSec)
 
-	fmt.Println(strconv.Itoa(affectedRows) + " rows affected")
+	Logger.Println(strconv.Itoa(affectedRows) + " rows affected")
 }
