@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -17,10 +16,14 @@ func main() {
 
 	for {
 		tempC := getTempC()
-		Logger.Println("Temp: " + strconv.FormatFloat(tempC, 'f', 2, 64) + "ºC")
+		//Logger.Println("Temp: " + strconv.FormatFloat(tempC, 'f', 2, 64) + "ºC")
+
+		if tempC > float64(getConfig().threshholdTemp) {
+			sendWarningEmail("Temperature", "ºC", getConfig().threshholdTemp, tempC)
+		}
 
 		cpuPct := getCpuPct()
-		Logger.Println("CPU: " + strconv.FormatFloat(cpuPct, 'f', 2, 64) + "%")
+		//Logger.Println("CPU: " + strconv.FormatFloat(cpuPct, 'f', 2, 64) + "%")
 
 		var disk1Usage float64
 		var disk2Usage float64
@@ -34,15 +37,21 @@ func main() {
 				disk2Usage = diskUsage
 			}
 
-			Logger.Println(diskName + "/ full: " + strconv.FormatFloat(diskUsage, 'f', 2, 64) + "%")
+			if disk1Usage > float64(getConfig().threshholdDisk1) {
+				sendWarningEmail("Disk 1 Usage", "%", getConfig().threshholdDisk1, disk1Usage)
+			} else if disk2Usage > float64(getConfig().threshholdDisk2) {
+				sendWarningEmail("Disk 2 Usage", "%", getConfig().threshholdDisk2, disk2Usage)
+			}
+
+			//Logger.Println(diskName + "/ usage: " + strconv.FormatFloat(diskUsage, 'f', 2, 64) + "%")
 		}
 
 		memoryUsage := getRamPct()
-		Logger.Println("Ram: " + strconv.FormatFloat(memoryUsage, 'f', 2, 64) + "%")
+		//Logger.Println("Ram: " + strconv.FormatFloat(memoryUsage, 'f', 2, 64) + "%")
 
 		uptimeSec := getUptimeSec()
-		uptimeHours := float64(uptimeSec) / 60 / 60
-		Logger.Println("Uptime: " + strconv.FormatFloat(uptimeHours, 'f', 2, 64) + "hrs")
+		//uptimeHours := float64(uptimeSec) / 60 / 60
+		//Logger.Println("Uptime: " + strconv.FormatFloat(uptimeHours, 'f', 2, 64) + "hrs")
 
 		currentTime := time.Now()
 
