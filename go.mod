@@ -3,6 +3,7 @@ module pi-monitor
 go 1.24
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/shirou/gopsutil/v4 v4.25.1
 	modernc.org/sqlite v1.35.0
 )
