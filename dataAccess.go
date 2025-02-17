@@ -1,12 +1,22 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 )
 
 func createDatabaseIdempotent() {
+	// Ensure file exists
+	if _, err := os.Stat("./database.db"); errors.Is(err, os.ErrNotExist) {
+		fmt.Println("Creating database file")
+		if _, err := os.Create("./database.db"); err != nil {
+			panic(err)
+		}
+	}
+
 	query := "SELECT name FROM sqlite_master WHERE type='table' AND name='Metrics';"
 
 	result := queryRow(query)
