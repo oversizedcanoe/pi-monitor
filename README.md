@@ -1,10 +1,21 @@
 # pi-monitor
-A script to monitor and track various metrics on a Raspberry Pi
+A script to monitor and track various metrics on a Raspberry Pi (_but actually works on most machines_).
 
-- Create a loop that lasts forever.
-- At the end of the loop, sleep for a set amount of time
-- Possibly could end up not doing a loop/sleep and setting up a cron job to execute this script once, but the structure stand
-- Capture system values: Temperature, CPU%, GPU%, Ram usage, Storage usage, other
-- Save to SQLite database
-- Send emails when threshholds are met.
-- Allow user to view data somehow: Web UI, daily emails, CLI
+### Method
+This script uses [gopsutil](github.com/shirou/gopsutil/v4) to retrieve several metrics about the machine it is running on, and stores them to a local SQLite database.
+
+### Metrics
+Currently, the following metrics are stored:
+| Metric | Unit |
+| ------ | ---- |
+| Temperature | º Celcius |
+| CPU Usage | % |
+| Disk 1 Usage | % |
+| Disk 2 Usage | % |
+| Memory (Ram) Usage | % |
+| Uptime | Seconds |
+
+### Intended Functionality / TODO
+- Send emails when thresholds are met
+- Create UI to view data (Web or CLI)
+- Convert script to not run forever and instead use cron job
